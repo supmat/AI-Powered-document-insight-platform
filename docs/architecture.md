@@ -9,20 +9,20 @@ The following logical diagram illustrates the main components of the system and 
 ```mermaid
 graph TD
     Client[Client] -->|HTTP Bearer JWT| Gateway[Gateway / BFF]
-    
+
     Gateway -->|POST /ingest| Ingestion[Ingestion Service]
     Gateway -->|POST /query| Query[Query Service]
-    
+
     Ingestion -.->|Store PDF/Images| S3[(Object Storage / MinIO)]
     Ingestion -->|Publish Event| RMQ[Message Broker / RabbitMQ]
-    
+
     Worker[Processing Worker] -.->|Consume Event| RMQ
     Worker -.->|Read File| S3
-    
+
     Worker -->|1. Extract Text & NER| ML[Local ML Logic]
     Worker -->|2. Generate Embeddings| LLM_API((Google Gemini API))
     Worker -->|3. Store Vectors| DB[(PostgreSQL / pgvector)]
-    
+
     Query -->|1. Retrieve Context| DB
     Query -->|2. Generate Answer| LLM_API
 ```
@@ -79,7 +79,7 @@ graph TD
 
 2. **Cloud LLM (Gemini API) vs. Self-hosted Open Source Models**
    - *Trade-off:* Relying on Google's API introduces latency for over-the-wire roundtrips, vendor lock-in, and compliance considerations vs. holding data entirely on-premise.
-   - *Reasoning:* Allows rapid greenfield deployment, extremely high answer quality, and massive context windows without dedicating significant operational resources to manage and scale expensive GPU instances locally. 
+   - *Reasoning:* Allows rapid greenfield deployment, extremely high answer quality, and massive context windows without dedicating significant operational resources to manage and scale expensive GPU instances locally.
 
 3. **PostgreSQL (pgvector) vs. Dedicated Vector DBs**
    - *Trade-off:* Self-hosted PostgreSQL with `pgvector` was chosen over a dedicated SaaS vector DB (like Pinecone) or standalone vector engine (like Qdrant).
