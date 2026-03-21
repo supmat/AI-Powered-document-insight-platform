@@ -1,0 +1,19 @@
+# This file declares the owners for the AI-powered Document Insight Platform
+# Syntax: path owner1 owner2 ...
+
+# Default owner for everything
+*       @tomo
+
+# Python Backend Services
+/gateway/   @tomo
+/ingestion/ @tomo
+/query/     @tomo
+/worker/    @tomo
+
+# Infrastructure and DevOps
+/k8s/       @tomo
+/docker-compose.yml @tomo
+/.github/   @tomo
+
+# Frontend UI
+/frontend/  @tomo
