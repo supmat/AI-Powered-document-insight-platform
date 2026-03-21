@@ -1,0 +1,42 @@
+# Web Framework
+fastapi[all]>=0.110.0
+gunicorn>=21.2.0
+
+# Async Message Broker client
+aio-pika>=9.4.0
+
+# Database & Vector Store
+asyncpg>=0.29.0
+sqlalchemy>=2.0.28
+pgvector>=0.2.5
+
+# Object Storage & Request handling
+minio>=7.2.5
+requests>=2.31.0
+httpx>=0.27.0
+
+# Machine Learning & Text Processing
+google-genai>=0.4.0
+pymupdf>=1.23.26
+spacy>=3.7.4
+
+# Authentication & Security
+PyJWT>=2.8.0
+passlib[bcrypt]>=1.7.4
+
+# Utilities & Parsing
+pydantic-settings>=2.2.1
+python-dotenv>=1.0.1
+python-multipart>=0.0.9
+
+# Observability (OpenTelemetry)
+opentelemetry-api>=1.23.0
+opentelemetry-sdk>=1.23.0
+opentelemetry-instrumentation-fastapi>=0.44b0
+opentelemetry-exporter-otlp>=1.23.0
+
+# Testing
+pytest>=8.1.1
+pytest-asyncio>=0.23.5
+httpx>=0.27.0
+pre-commit>=3.6.0
