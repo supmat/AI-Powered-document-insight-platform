@@ -13,7 +13,7 @@ Deploying the AI-powered Document Insight Platform requires defining how the sys
 ## Rationale
 - **Docker Compose & Kubernetes:** Docker Compose provides a frictionless local development experience, enabling developers to spin up the gateway, workers, RabbitMQ, and databases with a single `make local-run` command. Kubernetes is the industry standard for cloud-native container orchestration, providing built-in features for secrets management, self-healing, rolling updates, and horizontal auto-scaling based on CPU/Memory or custom metrics (e.g., RabbitMQ queue length).
 - **Worker Management:** Using standalone Python workers in containers decoupled from the web servers means we can scale the web API and background ML processing independently. Kubernetes deployments make it trivial to increase replica counts for the worker independently of the ingestion API.
-- **JWT (JSON Web Tokens):** For the Gateway / BFF, JWT provides a stateless mechanism to verify user identity without querying a centralized session database on every request. 
+- **JWT (JSON Web Tokens):** For the Gateway / BFF, JWT provides a stateless mechanism to verify user identity without querying a centralized session database on every request.
   - **Usage:** Clients obtain a JWT upon login and pass it in the `Authorization: Bearer <token>` header for subsequent requests.
   - **Storage:** For API clients, the token should be kept securely in memory. If a frontend UI is developed later, the JWT should be stored in an `HttpOnly`, `Secure` cookie to mitigate XSS attacks while the BFF handles token extraction.
 
