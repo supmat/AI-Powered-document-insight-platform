@@ -2,18 +2,18 @@
 # Syntax: path owner1 owner2 ...
 
 # Default owner for everything
-*       @tomo
+*       @supmat
 
 # Python Backend Services
-/gateway/   @tomo
-/ingestion/ @tomo
-/query/     @tomo
-/worker/    @tomo
+/gateway/   @supmat
+/ingestion/ @supmat
+/query/     @supmat
+/worker/    @supmat
 
 # Infrastructure and DevOps
-/k8s/       @tomo
-/docker-compose.yml @tomo
-/.github/   @tomo
+/k8s/       @supmat
+/docker-compose.yml @supmat
+/.github/   @supmat
 
 # Frontend UI
-/frontend/  @tomo
+/frontend/  @supmat
