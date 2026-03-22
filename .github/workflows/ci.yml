@@ -7,7 +7,7 @@ on:
     # Trigger on any code push to the PR
     types: [opened, synchronize, reopened]
   pull_request_review:
-    # Trigger ONLY when a teammate submits a review (e.g. +2 / Approval)
+    # Trigger ONLY when a teammate submits a review (Approval)
     types: [submitted]
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
         uses: pre-commit/action@v3.0.1
 
   # ---------------------------------------------------------
-  # HEAVY CHECKS (Runs ONLY when a PR is Approved +2)
+  # HEAVY CHECKS (Runs ONLY when a PR is Approved )
   # ---------------------------------------------------------
   source-delivery-check:
     name: Unit Tests & Security Scan
@@ -68,5 +68,4 @@ jobs:
         run: bandit -r . -ll -ii
 
       - name: Run Pytest
-        # Append '|| true' temporarily
-        run: pytest || true
+        run: pytest
