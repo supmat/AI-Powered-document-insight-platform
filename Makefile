@@ -14,11 +14,11 @@ setup: ## Install local python dependencies and pre-commit hooks
 	.venv/bin/pre-commit install
 
 format: ## Run the code formatters manually over all code
-	black .
-	ruff check . --fix
+	.venv/bin/black .
+	.venv/bin/ruff check . --fix
 
 test: ## Run the pytest suite
-	pytest
+	.venv/bin/pytest
 
 help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
