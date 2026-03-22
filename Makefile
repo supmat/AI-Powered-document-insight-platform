@@ -2,11 +2,11 @@
 
 local-run: ## Start all dependent infrastructure and development servers locally
 	@echo "Starting up the whole stack via Docker Compose..."
-	docker compose up -d --build
+	sudo docker compose up -d --build
 
 local-stop: ## Spin down all infrastructure components
 	@echo "Stopping Docker Compose stack..."
-	docker compose down
+	sudo docker compose down
 
 setup: ## Install local python dependencies and pre-commit hooks
 	python3 -m venv .venv
