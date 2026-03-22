@@ -21,6 +21,17 @@ class Settings(BaseSettings):
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
 
+    # MinIO Settings
+    MINIO_URL: str = "localhost:9000"
+    MINIO_ROOT_USER: str = "admin"
+    MINIO_ROOT_PASSWORD: str = "password"
+    MINIO_BUCKET_NAME: str = "documents"
+    MINIO_SECURE: bool = False
+
+    # RabbitMQ Settings
+    RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672/"
+    RABBITMQ_QUEUE_NAME: str = "document_processing_queue"
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 
