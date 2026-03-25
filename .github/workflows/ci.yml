@@ -42,11 +42,8 @@ jobs:
   # ---------------------------------------------------------
   source-delivery-check:
     name: Unit Tests & Security Scan
-    # Target only PRs that have been explicitly APPROVED by a reviewer,
-    # OR if code was merged/pushed directly to master.
-    if: |
-      (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/master')
+    # Target Pull Requests before they are merged, OR direct pushes to master
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
