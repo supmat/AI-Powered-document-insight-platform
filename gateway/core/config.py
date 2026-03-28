@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     # Database Settings
-    POSTGRES_USER: str = "admin"
-    POSTGRES_PASSWORD: str = "password"
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
     POSTGRES_SERVER: str = "localhost"  # Docker compose exposes this to localhost
     POSTGRES_DB: str = "document_insights"
 
@@ -23,13 +23,13 @@ class Settings(BaseSettings):
 
     # MinIO Settings
     MINIO_URL: str = "localhost:9000"
-    MINIO_ROOT_USER: str = "admin"
-    MINIO_ROOT_PASSWORD: str = "password"
+    MINIO_ROOT_USER: str
+    MINIO_ROOT_PASSWORD: str
     MINIO_BUCKET_NAME: str = "documents"
     MINIO_SECURE: bool = False
 
     # RabbitMQ Settings
-    RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672/"
+    RABBITMQ_URL: str
     RABBITMQ_QUEUE_NAME: str = "document_processing_queue"
 
     model_config = {"env_file": ".env", "extra": "ignore"}

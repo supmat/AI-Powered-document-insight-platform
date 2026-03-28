@@ -31,7 +31,7 @@ def test_upload_pdf_success(mock_upload, mock_publish):
     file_obj = io.BytesIO(file_content)
 
     response = client.post(
-        "/api/v1/documents/",
+        "/api/v1/upload_documents/",
         files=[("files", ("test.pdf", file_obj, "application/pdf"))],
     )
 
@@ -47,7 +47,8 @@ def test_upload_invalid_file_type():
     file_obj = io.BytesIO(file_content)
 
     response = client.post(
-        "/api/v1/documents/", files=[("files", ("test.txt", file_obj, "text/plain"))]
+        "/api/v1/upload_documents/",
+        files=[("files", ("test.txt", file_obj, "text/plain"))],
     )
 
     assert response.status_code == 400
@@ -62,7 +63,7 @@ def test_upload_images_and_multiple_files(mock_upload, mock_publish):
     pdf_content = b"%PDF-1.4\n%EOF"
 
     response = client.post(
-        "/api/v1/documents/",
+        "/api/v1/upload_documents/",
         files=[
             ("files", ("image1.png", io.BytesIO(png_content), "image/png")),
             ("files", ("image2.JPG", io.BytesIO(jpg_content), "image/jpeg")),
@@ -85,7 +86,7 @@ def test_upload_large_file_rejected():
     file_obj = io.BytesIO(large_content)
 
     response = client.post(
-        "/api/v1/documents/",
+        "/api/v1/upload_documents/",
         files=[("files", ("huge.pdf", file_obj, "application/pdf"))],
     )
 
