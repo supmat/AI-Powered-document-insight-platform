@@ -1,7 +1,7 @@
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from gateway.main import app
-from processing.core.database import DocumentChunk
+from shared.models import DocumentChunk
 from gateway.api.deps import get_current_user
 from gateway.models.user import User
 

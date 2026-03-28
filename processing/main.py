@@ -28,6 +28,7 @@ async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
 
             # Step 2. Extract Text
             filename = file_path.split("/")[-1]
+            print(f"[*] Extracting text from {filename}...")
             if filename.lower().endswith(".pdf"):
                 text_corpus = extract_text_from_pdf(file_bytes)
             elif filename.lower().endswith((".png", ".jpg", ".jpeg")):
@@ -36,8 +37,10 @@ async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
                 raise ValueError(f"Unknown file extension for {filename}")
 
             if not text_corpus:
-                print(f"[!] No text found in {filename}. Skipping chunking.")
+                print(f"[ERROR!] No text found in {filename}. Skipping chunking.")
                 return
+
+            print(f"[*] Extracted {len(text_corpus)} characters.")
 
             # Step 3. Chunk text & NER
             chunks = chunk_text(text_corpus)
@@ -60,7 +63,7 @@ async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
                 f"[*] Successfully processed and vectorized document {doc_id} ({len(chunks)} chunks)"
             )
         except Exception as e:
-            print(f"[!] Error processing message: {e}")
+            print(f"[ERROR!] Error processing message: {e}")
 
 
 async def main():

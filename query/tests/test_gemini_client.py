@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 from query.services.gemini_client import retrieve_relevant_chunks, generate_rag_answer
-from processing.core.database import DocumentChunk
+from shared.models import DocumentChunk
 
 
 @pytest.fixture
@@ -50,7 +50,8 @@ async def test_generate_rag_answer_empty_chunks():
 async def test_generate_rag_answer_gemini_success(mock_client):
     mock_response = MagicMock()
     mock_response.text = "Gemini answer!"
-    mock_client.models.generate_content.return_value = mock_response
+    # The new SDK uses _client.aio.models.generate_content for async calls
+    mock_client.aio.models.generate_content = AsyncMock(return_value=mock_response)
 
     chunk = DocumentChunk(
         text_content="Sample context content",
