@@ -4,13 +4,14 @@ from gateway.core.config import settings
 from gateway.core.rate_limit import rate_limit_middleware
 from gateway.api import auth, users, ingestion, documents
 from query.api import q_response
-from gateway.core.database import engine, Base
+from shared.database import get_db_components, Base
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create all PostgreSQL tables on startup
+    engine, _ = get_db_components()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 

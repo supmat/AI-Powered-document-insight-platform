@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from gateway.main import app
 from gateway.api.deps import get_db
-from gateway.models.db_models import DBUser
+from shared.models import DBUser
 from gateway.core.security import get_password_hash
 
 

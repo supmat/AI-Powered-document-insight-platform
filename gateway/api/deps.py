@@ -5,10 +5,10 @@ from jwt.exceptions import InvalidTokenError
 from gateway.core.config import settings
 from gateway.models.token import TokenPayload
 from gateway.models.user import User
-from gateway.core.database import get_db
+from shared.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from gateway.models.db_models import DBUser
+from shared.models import DBUser
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.APP_V1_STR}/auth/login")
 

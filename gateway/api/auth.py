@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from gateway.core import security
 from gateway.core.config import settings
-from gateway.core.database import get_db
+from shared.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from gateway.models.db_models import DBUser
+from shared.models import DBUser
 from gateway.models.user import UserCreate
 
 

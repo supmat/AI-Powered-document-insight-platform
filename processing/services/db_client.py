@@ -1,9 +1,11 @@
-from processing.core.database import AsyncSessionLocal, DocumentChunk, engine, Base
+from shared.database import get_db_components, Base
+from shared.models import DocumentChunk
 from sqlalchemy import text
 
 
 async def init_db():
     """Idempotently bootstrap the PostgreSQL pgvector extension and schemas."""
+    engine, _ = get_db_components()
     async with engine.begin() as conn:
         # Strictly ensure the pgvector C-extension is enabled on the database!
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
@@ -22,6 +24,7 @@ async def store_document_chunks(
     Atomically stores the exact text chunks, their 768-D AI embeddings,
     and extracted SpaCy NER entities directly into the local PostgreSQL pgvector table.
     """
+    _, AsyncSessionLocal = get_db_components()
     async with AsyncSessionLocal() as session:
         for i, (chunk, embedding, entities) in enumerate(
             zip(chunks, embeddings, entities_list)

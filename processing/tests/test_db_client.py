@@ -21,9 +21,10 @@ async def test_init_db_creates_extension_and_tables():
 
     mock_base = MagicMock()
 
-    with patch("processing.services.db_client.engine", mock_engine), patch(
-        "processing.services.db_client.Base", mock_base
-    ):
+    with patch(
+        "processing.services.db_client.get_db_components",
+        return_value=(mock_engine, None),
+    ), patch("processing.services.db_client.Base", mock_base):
         from processing.services.db_client import init_db
 
         await init_db()
@@ -52,7 +53,10 @@ async def test_store_document_chunks_adds_and_commits():
     fake_embeddings = [[0.1] * 768, [0.2] * 768]
     fake_entities = [[{"text": "Apple", "label": "ORG"}], []]
 
-    with patch("processing.services.db_client.AsyncSessionLocal", mock_session_factory):
+    with patch(
+        "processing.services.db_client.get_db_components",
+        return_value=(None, mock_session_factory),
+    ):
         from processing.services.db_client import store_document_chunks
 
         await store_document_chunks(
@@ -78,8 +82,8 @@ async def test_store_document_chunks_empty_input():
     mock_session.__aexit__ = AsyncMock(return_value=False)
 
     with patch(
-        "processing.services.db_client.AsyncSessionLocal",
-        MagicMock(return_value=mock_session),
+        "processing.services.db_client.get_db_components",
+        return_value=(None, MagicMock(return_value=mock_session)),
     ):
         from processing.services.db_client import store_document_chunks
 
