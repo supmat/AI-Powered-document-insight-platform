@@ -13,8 +13,8 @@ from pydantic import BaseModel
 from typing import List
 
 from gateway.api.deps import get_current_user
-from gateway.core.database import get_db
-from processing.core.database import DocumentChunk
+from shared.database import get_db
+from shared.models import DocumentChunk
 from gateway.models.user import User
 
 router = APIRouter()

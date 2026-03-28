@@ -4,7 +4,7 @@ from google.genai import types
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Dict
-from processing.core.database import DocumentChunk
+from shared.models import DocumentChunk
 from processing.core.config import settings
 from tenacity import retry, stop_after_attempt, wait_exponential
 from sentence_transformers import SentenceTransformer
@@ -24,19 +24,25 @@ _local_llm_pipeline = None
 async def get_embeddings(texts: list[str]) -> list[list[float]]:
     """
     Generates high-quality vector embeddings for an array of text chunks.
-    Attempts to use Gemini text-embedding-004.
+    Attempts to use Gemini embedding 001 forcing 768 dimensions.
     Falls back to local all-mpnet-base-v2 (768 dimensions) if Gemini fails.
     """
     if _client:
         try:
-            result = _client.models.embed_content(
-                model="models/text-embedding-004",
-                contents=texts,
-                config=types.EmbedContentConfig(task_type="retrieval_document"),
+            # The newer SDK does NOT accept the 'models/' prefix
+            config = types.EmbedContentConfig(
+                task_type="RETRIEVAL_DOCUMENT", output_dimensionality=768
             )
-            return [e.values for e in result.embeddings]
+
+            result = _client.models.embed_content(
+                model="gemini-embedding-001",
+                contents=texts,
+                config=config,
+            )
+            # Slice to exactly 768 just in case, as some models return 3072 by default
+            return [e.values[:768] for e in result.embeddings]
         except Exception as e:
-            print(f"[!] Gemini Embeddings failed, falling back to local ML model: {e}")
+            print(f"[ERROR!] Gemini model failed: {e}")
 
     # Fallback to local SentenceTransformer (MUST be 768-D to match pgvector schema)
     global local_embedder
@@ -126,12 +132,9 @@ async def generate_rag_answer(question: str, chunks: List[DocumentChunk]) -> str
     # --- PRIMARY ROUTE: GEMINI SDK ---
     if _client:
         try:
-            # Note: Although the SDK provides async methods,
-            # for consistency with processing worker we use standard calls
-            # or we can use the async version if preferred.
-            # For now, let's use the sync call in a thread to avoid blocking if needed,
-            # or just use the SDK as it's designed.
-            response = _client.models.generate_content(
+            # This allows FastAPI to handle thousands of other requests
+            # while waiting for Google's servers to reply.
+            response = await _client.aio.models.generate_content(
                 model="gemini-2.0-flash",  # Matching common Gemini 2.0 usage
                 contents=prompt,
                 config=types.GenerateContentConfig(temperature=0.2),
@@ -140,7 +143,7 @@ async def generate_rag_answer(question: str, chunks: List[DocumentChunk]) -> str
                 return response.text
 
         except Exception as e:
-            print(f"[!] Gemini SDK Error: {e}. Falling back to local model...")
+            print(f"[ERROR!] Gemini SDK Error: {e}. Falling back to local model...")
             # Fall through to local model
             pass
 
@@ -150,7 +153,7 @@ async def generate_rag_answer(question: str, chunks: List[DocumentChunk]) -> str
         answer = await asyncio.to_thread(_generate_local_answer, prompt)
         return answer
     except Exception as e:
-        print(f"[!] Local LLM Error: {e}")
+        print(f"[ERROR!] Local LLM Error: {e}")
         return (
             "Sorry, both the primary LLM and the local fallback encountered an error."
         )

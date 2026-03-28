@@ -37,7 +37,7 @@ async def extract_text_from_image(image_bytes: bytes) -> str:
             )
             return response.text
         except Exception as e:
-            print(f"[!] Gemini Vision failed, falling back to EasyOCR: {e}")
+            print(f"[ERROR!] Gemini Vision failed, falling back to EasyOCR: {e}")
 
     # Fallback to local EasyOCR
     global ocr_reader

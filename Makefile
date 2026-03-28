@@ -34,6 +34,8 @@ env-check: ## Verify .env exists and contains all required keys
 local-run: env-check ## Start all dependent infrastructure and development servers locally
 	@echo "Starting up the whole stack via Docker Compose..."
 	sudo docker compose up -d --build
+	@echo "Initializing Database Schema..."
+	PYTHONPATH=. .venv/bin/python scripts/init_db.py
 	@echo "Starting Gateway and Processing Worker in parallel. Press Ctrl+C to stop."
 	@trap 'kill 0' SIGINT; \
 	.venv/bin/uvicorn gateway.main:app --reload --port 8001 & \

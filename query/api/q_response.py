@@ -6,7 +6,7 @@ from query.services.gemini_client import (
     generate_rag_answer,
     get_embeddings,
 )
-from gateway.core.database import get_db
+from shared.database import get_db
 from gateway.api.deps import get_current_user
 from gateway.models.user import User
 
@@ -77,5 +77,5 @@ async def ask_question(
         )
 
     except Exception as e:
-        print(f"[!] Query Error: {e}")
+        print(f"[ERROR!] Query Error: {e}")
         raise HTTPException(status_code=500, detail="Failed to process query")
