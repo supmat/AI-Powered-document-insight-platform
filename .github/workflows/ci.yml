@@ -78,7 +78,7 @@ jobs:
           .venv/bin/pip install bandit
 
       - name: Run Bandit Security Scan
-        run: .venv/bin/bandit -r . -ll -ii --exclude ./.venv
+        run: .venv/bin/bandit -r . --exclude ./.venv,**/tests/** 2>&1
 
       - name: Run Pytest
         run: .venv/bin/pytest

@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from gateway.core.config import settings
 from gateway.core.rate_limit import rate_limit_middleware
-from gateway.api import auth, users, ingestion
+from gateway.api import auth, users, ingestion, documents
+from query.api import q_response
 from gateway.core.database import engine, Base
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -35,7 +36,16 @@ app.include_router(
 )
 app.include_router(users.router, prefix=f"{settings.APP_V1_STR}/users", tags=["users"])
 app.include_router(
-    ingestion.router, prefix=f"{settings.APP_V1_STR}/documents", tags=["documents"]
+    ingestion.router,
+    prefix=f"{settings.APP_V1_STR}/upload_documents",
+    tags=["documents"],
+)
+app.include_router(
+    documents.router, prefix=f"{settings.APP_V1_STR}/documents", tags=["documents"]
+)
+
+app.include_router(
+    q_response.router, prefix=f"{settings.APP_V1_STR}/query", tags=["query"]
 )
 
 
