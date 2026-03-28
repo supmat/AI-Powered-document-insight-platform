@@ -4,7 +4,7 @@ import json
 from processing.core.config import settings
 from processing.services.minio_client import download_file_from_minio
 from processing.services.pdf_extractor import extract_text_from_pdf
-from processing.services.gemini_client import get_embeddings
+from query.services.gemini_client import get_embeddings
 from processing.services.image_extractor import extract_text_from_image
 from processing.services.chunker import chunk_text
 from processing.services.ner_client import extract_entities
