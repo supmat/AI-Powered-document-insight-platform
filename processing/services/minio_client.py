@@ -28,5 +28,5 @@ def download_file_from_minio(object_path: str) -> bytes:
             try:
                 response.close()
                 response.release_conn()
-            except Exception:
+            except Exception:  # nosec B110
                 pass

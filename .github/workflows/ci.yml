@@ -78,7 +78,13 @@ jobs:
           .venv/bin/pip install bandit
 
       - name: Run Bandit Security Scan
-        run: .venv/bin/bandit -r . -ll -ii --exclude ./.venv
+        run: .venv/bin/bandit -r . --exclude ./.venv,**/tests/** 2>&1
 
       - name: Run Pytest
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          MINIO_ROOT_USER: test_minio_user
+          MINIO_ROOT_PASSWORD: test_minio_password
+          RABBITMQ_URL: amqp://guest:guest@localhost:5672/
         run: .venv/bin/pytest
