@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from gateway.main import app
+import time
 
 client = TestClient(app)
 
@@ -24,3 +25,6 @@ def test_per_user_rate_limit():
     assert (
         rate_limited_count > 0
     ), "After limit is reached, requests should return 429 Too Many Requests"
+    time.sleep(60)
+    response = client.get("/health")
+    assert response.status_code == 200
