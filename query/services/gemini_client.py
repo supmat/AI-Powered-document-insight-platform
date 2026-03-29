@@ -41,6 +41,7 @@ async def get_embeddings(texts: list[str]) -> list[list[float]]:
             )
             # Slice to exactly 768 just in case, as some models return 3072 by default
             return [e.values[:768] for e in result.embeddings]
+
         except Exception as e:
             print(f"[ERROR!] Gemini model failed: {e}")
 
@@ -135,7 +136,7 @@ async def generate_rag_answer(question: str, chunks: List[DocumentChunk]) -> str
             # This allows FastAPI to handle thousands of other requests
             # while waiting for Google's servers to reply.
             response = await _client.aio.models.generate_content(
-                model="gemini-2.0-flash",  # Matching common Gemini 2.0 usage
+                model="gemini-2.5-flash",  # Matching common Gemini 2.0 usage
                 contents=prompt,
                 config=types.GenerateContentConfig(temperature=0.2),
             )

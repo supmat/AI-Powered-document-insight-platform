@@ -6,6 +6,7 @@ from gateway.api import auth, users, ingestion, documents
 from query.api import q_response
 from shared.database import get_db_components, Base
 from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -29,6 +30,19 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 # Register custom middleware
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,  # type: ignore
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.add_middleware(BaseHTTPMiddleware, dispatch=rate_limit_middleware)  # type: ignore
 
 # Register Routers

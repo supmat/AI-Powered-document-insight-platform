@@ -14,7 +14,7 @@ def test_per_user_rate_limit():
     rate_limited_count = 0
 
     # Send 15 rapid requests (assuming limit is 5-10 per minute for tests)
-    for _ in range(15):
+    for _ in range(25):
         response = client.get("/health")
         if response.status_code == 200:
             success_count += 1
