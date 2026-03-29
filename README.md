@@ -19,9 +19,12 @@ Detailed documentation on how to interact with the backend services can be found
 ## Quick Start (Local Development)
 
 ### Prerequisites
-*   Docker & Docker Compose
-*   Python 3.10+
-*   `make` utility
+*   **Operating System**:
+    *   **Linux / macOS**: Fully supported natively.
+    *   **Windows**: Supported via **WSL2** (Windows Subsystem for Linux). Running directly in PowerShell/CMD is not supported due to `Makefile` dependencies.
+*   **Docker & Docker Compose** (Desktop or Engine)
+*   **Python 3.10+**
+*   **`make` utility** (Build automation)
 
 ### Environment Setup
 
@@ -58,8 +61,20 @@ To stop the background containers:
 make local-stop
 ```
 
+To perform a "factory reset" (wipe all databases, object storage, and local Docker images):
+```bash
+make deep-clean
+```
+
 ### Observability
 
 Metrics and distributed traces are collected via OpenTelemetry. You can view them using the following live links (when the telemetry stack is running locally):
 - **Metrics (Prometheus):** [http://localhost:9090](http://localhost:9090)
 - **Traces (Jaeger):** [http://localhost:16686](http://localhost:16686)
+
+## Developer Workflow & CI/CD
+
+This project uses **GitHub Actions** to automate quality assurance and deployments.
+
+*   **On Commit (Pull Requests):** When you push code or open a Pull Request, the CI pipeline runs a fast, core suite of checks. This includes `pre-commit` hooks (formatting, linting with Ruff, and type-checking with MyPy) and standard unit tests to ensure your changes are safe and functional.
+*   **On Merge (Push to Main):** When a Pull Request is successfully merged into the `master`/`main` branch, a broader scope of actions is triggered. This includes running the full, comprehensive test suite (including E2E and integration tests), rebuilding the production-ready Docker images, and publishing them to the container registry.
