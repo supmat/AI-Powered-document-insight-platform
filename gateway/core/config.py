@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # RabbitMQ Settings
     RABBITMQ_URL: str
     RABBITMQ_QUEUE_NAME: str = "document_processing_queue"
+    DATA_ENCRYPTION_KEY: str = ""
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

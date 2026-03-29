@@ -68,14 +68,18 @@ services:
       context: .
       dockerfile: gateway/Dockerfile
     restart: always
-    ports:
-      - "8001:8001"
     env_file: .env
     environment:
       - POSTGRES_SERVER=postgres
       - MINIO_URL=minio:9000
       - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-password}@rabbitmq:5672/
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`)"
+      - "traefik.http.routers.gateway.entrypoints=websecure"
+      - "traefik.http.routers.gateway.tls=true"
+      - "traefik.http.services.gateway.loadbalancer.server.port=8001"
     depends_on:
       postgres:
         condition: service_healthy
@@ -108,9 +112,14 @@ services:
   # ----------------------------------------------------------------------------
   jaeger:
     image: jaegertracing/all-in-one:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jaeger.rule=Host(`jaeger.localhost`)"
+      - "traefik.http.routers.jaeger.entrypoints=websecure"
+      - "traefik.http.routers.jaeger.tls=true"
+      - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
     ports:
-      - "16686:16686" # UI
-      - "4317:4317"   # OTLP gRPC
+      - "4317:4317"   # OTLP gRPC still needed for internal collection
 
   prometheus:
     image: prom/prometheus:latest
@@ -119,13 +128,21 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
-    ports:
-      - "9090:9090"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
 
   grafana:
     image: grafana/grafana:latest
-    ports:
-      - "3001:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
@@ -141,6 +158,29 @@ services:
     depends_on:
       - jaeger
       - prometheus
+
+  # ----------------------------------------------------------------------------
+  # REVERSE PROXY & SSL TERMINATION (Task 7.3)
+  # ----------------------------------------------------------------------------
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    environment:
+      - DOCKER_API_VERSION=1.52
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik_config/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik_config/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro
+      - ./traefik_config/certs:/etc/certs:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.service=api@internal"
 
 volumes:
   rabbitmq_data:

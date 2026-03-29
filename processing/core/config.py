@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_DB: str = "document_insights"
+    DATA_ENCRYPTION_KEY: str = ""
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

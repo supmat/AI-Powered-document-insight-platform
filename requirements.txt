@@ -28,6 +28,7 @@ sentence-transformers>=2.6.1
 # Authentication & Security
 PyJWT>=2.8.0
 passlib[bcrypt]>=1.7.4
+cryptography>=42.0.5
 
 # Utilities & Parsing
 pydantic-settings>=2.2.1
