@@ -1,6 +1,8 @@
 import aio_pika
 import json
+from opentelemetry import propagate
 from gateway.core.config import settings
+from typing import Dict
 
 
 async def publish_document_event(document_id: str, file_path: str, tenant_id: str):
@@ -23,10 +25,15 @@ async def publish_document_event(document_id: str, file_path: str, tenant_id: st
             "action": "process_document",
         }
 
+        # Inject trace context into headers
+        headers: Dict[str, str] = {}
+        propagate.inject(headers)
+
         await channel.default_exchange.publish(
             aio_pika.Message(
                 body=json.dumps(message_body).encode(),
                 delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                headers=headers,
             ),
             routing_key=settings.RABBITMQ_QUEUE_NAME,
         )

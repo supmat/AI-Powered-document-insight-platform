@@ -8,7 +8,7 @@ TEST_PASS="testpass123"
 PDF_FILE="scripts/test_document.pdf"
 
 echo "[*] Creating test PDF..."
-python3 -c "
+.venv/bin/python -c "
 import fitz
 doc = fitz.open()
 page = doc.new_page()
@@ -36,9 +36,12 @@ fi
 echo "[*] Token received: ${TOKEN:0:10}..."
 
 echo "[*] Uploading document..."
-UPLOAD_JSON=$(curl -s -X POST "$API_URL/upload_documents/" \
-     -H "Authorization: Bearer $TOKEN" \
-     -F "files=@$PDF_FILE")
+COMMAND="curl -s -X POST \"$API_URL/upload_documents/\" \
+     -H \"Authorization: Bearer $TOKEN\" \
+     -F \"files=@$PDF_FILE\""
+echo "Command: $COMMAND"
+UPLOAD_JSON=$(eval $COMMAND)
+echo "Response: $UPLOAD_JSON"
 
 DOC_ID=$(echo $UPLOAD_JSON | grep -oP '"task_id":"\K[^"]+')
 echo "[*] Uploaded! Document ID: $DOC_ID"
@@ -47,19 +50,27 @@ echo "[*] Waiting 10 seconds for background vectorization..."
 sleep 10
 
 echo "[*] Performing RAG Query..."
-QUERY_JSON=$(curl -s -X POST "$API_URL/query/ask" \
+QUERY_JSON=$(curl -s -X POST "$API_URL/query/" \
      -H "Authorization: Bearer $TOKEN" \
      -H "Content-Type: application/json" \
      -d "{\"question\": \"What is the secret code?\"}")
 
 echo "--------------------------------------------------"
 echo "RAG ANSWER:"
-echo $QUERY_JSON | grep -oP '"answer":"\K[^"]+'
+ANSWER=$(echo $QUERY_JSON | grep -oP '"answer":"\K[^"]+')
+echo "$ANSWER"
 echo "--------------------------------------------------"
 
+if [[ "$ANSWER" == *"42-ALPHA-ZULU"* ]]; then
+    echo "[PASSED] Found expected secret code in the answer!"
+else
+    echo "[FAILED] Expected '42-ALPHA-ZULU' but got: $ANSWER"
+    exit 1
+fi
+
 # Optional Cleanup
-# echo "[*] Cleaning up doc..."
-# curl -s -X DELETE "$API_URL/documents/$DOC_ID" -H "Authorization: Bearer $TOKEN"
+echo "[*] Cleaning up doc..."
+curl -s -X DELETE "$API_URL/documents/$DOC_ID" -H "Authorization: Bearer $TOKEN" > /dev/null
 
 echo "[*] E2E Curl Test Finished Successfully!"
 rm $PDF_FILE

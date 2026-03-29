@@ -7,6 +7,13 @@ from query.api import q_response
 from shared.database import get_db_components, Base
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.resources import Resource
+from prometheus_fastapi_instrumentator import Instrumentator
 
 
 @asynccontextmanager
@@ -27,7 +34,22 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# ------------------------------------------------------------------------------
+# OpenTelemetry Tracing Setup
+# ------------------------------------------------------------------------------
+resource = Resource(attributes={"service.name": "gateway"})
+provider = TracerProvider(resource=resource)
+processor = BatchSpanProcessor(
+    OTLPSpanExporter(endpoint="otel-collector:4317", insecure=True)
+)
+provider.add_span_processor(processor)
+trace.set_tracer_provider(provider)
+
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+
+# Instrument FastAPI with OTel and Prometheus
+FastAPIInstrumentor.instrument_app(app)
+Instrumentator().instrument(app).expose(app)
 
 # Register custom middleware
 origins = [

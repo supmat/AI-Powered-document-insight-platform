@@ -1,4 +1,4 @@
-AI-Powered Document Insight Platform
+# AI-Powered Document Insight Platform [![CI](https://github.com/supmat/AI-Powered-document-insight-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/supmat/AI-Powered-document-insight-platform/actions/workflows/ci.yml)
 
 An enterprise-grade document ingestion and Insight platform powered by the Retrieval-Augmented Generation (RAG) architecture. This system allows tenants to securely upload documents, extract structured text and entities using Machine Learning pipelines, generate vector embeddings, and query them naturally using Large Language Models (LLMs) like Google Gemini.
 
@@ -56,3 +56,9 @@ To stop the background containers:
 ```bash
 make local-stop
 ```
+
+### Observability
+
+Metrics and distributed traces are collected via OpenTelemetry. You can view them using the following live links (when the telemetry stack is running locally):
+- **Metrics (Prometheus):** [http://localhost:9090](http://localhost:9090)
+- **Traces (Jaeger):** [http://localhost:16686](http://localhost:16686)
