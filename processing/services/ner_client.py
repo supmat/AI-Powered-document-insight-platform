@@ -1,4 +1,5 @@
 import spacy
+import re
 from spacy.util import is_package
 from langdetect import detect, DetectorFactory
 
@@ -30,6 +31,7 @@ def get_spacy_model(lang_code: str):
                 f"[*] Dynamically downloading SpaCy NLP model: {model_name} for language '{lang_code}'..."
             )
             spacy.cli.download(model_name)
+
         loaded_models[model_name] = spacy.load(model_name)
 
     return loaded_models[model_name]
@@ -62,10 +64,21 @@ def extract_entities(text: str) -> list[dict]:
             "EVENT",
             "DATE",
             "MISC",
+            "CODE",
         ]:
             ent_val = (ent.text.strip(), ent.label_)
             if ent_val not in seen:
                 seen.add(ent_val)
                 entities.append({"text": ent.text.strip(), "label": ent.label_})
+
+    # 2. Add regex-based 'CODE' entities that standard tokenizers often split
+    # This captures things like: 42-ALPHA-ZULU, UUIDs, or PROJECT-123-X
+    code_pattern = r"\b[A-Z0-9]{2,}(?:-[A-Z0-9]+)+\b"
+    for match in re.finditer(code_pattern, text):
+        code_text = match.group().strip()
+        ent_val = (code_text, "CODE")
+        if ent_val not in seen:
+            seen.add(ent_val)
+            entities.append({"text": code_text, "label": "CODE"})
 
     return entities
