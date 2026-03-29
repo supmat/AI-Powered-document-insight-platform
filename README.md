@@ -14,6 +14,7 @@ An enterprise-grade document ingestion and Insight platform powered by the Retri
 Detailed documentation on how to interact with the backend services can be found here:
 
 * **[API Reference Documentation](docs/api_reference.md)**: A complete guide for Frontend Developers, including authentication steps, document management endpoints, and querying procedures.
+* **[Onboarding Guide](docs/onboarding.md)**: A deep-dive into the system architecture, technology stack, and local development setup for new contributors.
 
 ## Quick Start (Local Development)
 
