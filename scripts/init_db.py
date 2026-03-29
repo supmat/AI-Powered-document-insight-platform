@@ -11,10 +11,10 @@ async def main():
             print(
                 f"[*] Bootstrapping Database Schema and Extensions (Attempt {i+1}/10)..."
             )
-            # 1. Initialize shared models (Tables)
-            await shared_init()
-            # 2. Initialize processing specific needs (pgvector extension)
+            # 1. Initialize processing specific needs (pgvector extension)
             await processing_init()
+            # 2. Initialize shared models (Tables)
+            await shared_init()
             print("[*] Database Bootstrap Complete.")
             return
         except Exception as e:

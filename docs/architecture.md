@@ -13,15 +13,15 @@ graph TD
     Gateway -->|POST /ingest| Ingestion[Ingestion Service]
     Gateway -->|POST /query| Query[Query Service]
 
-    Ingestion -.->|Store PDF/Images| S3[(Object Storage / MinIO)]
+    Ingestion -.->|Store PDF/Images| S3[("Object Storage / MinIO")]
     Ingestion -->|Publish Event| RMQ[Message Broker / RabbitMQ]
 
     Worker[Processing Worker] -.->|Consume Event| RMQ
     Worker -.->|Read File| S3
 
     Worker -->|1. Extract Text & NER| ML[Local ML Logic]
-    Worker -->|2. Generate Embeddings| LLM_API((Google Gemini API))
-    Worker -->|3. Store Vectors| DB[(PostgreSQL / pgvector)]
+    Worker -->|2. Generate Embeddings| LLM_API(("Google Gemini API"))
+    Worker -->|3. Store Vectors| DB[("PostgreSQL / pgvector")]
 
     Query -->|1. Retrieve Context| DB
     Query -->|2. Generate Answer| LLM_API
@@ -63,13 +63,14 @@ graph TD
 4. **Event Trigger:** An event containing the file URI and tenant metadata is pushed to a RabbitMQ queue.
 5. **Immediate Response:** The user receives a `202 Accepted` response.
 6. **Background Processing:** The Worker dequeues the event, downloads the file, processes text/NER, fetches embeddings from the LLM, and stores the chunks in the PostgreSQL database keyed by `tenant_id`.
+7. **Retrieval:** The Query Service converts the question into an embedding via the LLM API, and SQL queries the pgvector extension for similar chunks, strictly passing the user's `tenant_id` in the `WHERE` clause.
+8. **Answer Generation:** The most relevant chunks are batched into a prompt alongside the original question. The Gemini API generates a concise response.
+9. **Result:** The computed answer, confidence scores, and source citations are returned synchronously to the client.
+
 
 ### 2. Query Flow (Synchronous)
 1. **User Request:** The client sends a question via POST (`/query`).
 2. **Gateway:** Authenticates request and routes to Query Service.
-3. **Retrieval:** The Query Service converts the question into an embedding via the LLM API, and SQL queries the pgvector extension for similar chunks, strictly passing the user's `tenant_id` in the `WHERE` clause.
-4. **Answer Generation:** The most relevant chunks are batched into a prompt alongside the original question. The Gemini API generates a concise response.
-5. **Result:** The computed answer, confidence scores, and source citations are returned synchronously to the client.
 
 ## Design Trade-offs
 

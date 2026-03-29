@@ -39,6 +39,7 @@ opentelemetry-api>=1.23.0
 opentelemetry-sdk>=1.23.0
 opentelemetry-instrumentation-fastapi>=0.44b0
 opentelemetry-exporter-otlp>=1.23.0
+prometheus-fastapi-instrumentator>=7.0.0
 
 # Testing
 pytest>=8.1.1
