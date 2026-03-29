@@ -134,7 +134,7 @@ async def generate_rag_answer(question: str, chunks: List[DocumentChunk]) -> str
     if _client:
         try:
             # This allows FastAPI to handle thousands of other requests
-            # while waiting for Google's servers to reply.
+            # while r Google's servers to reply.
             response = await _client.aio.models.generate_content(
                 model="gemini-2.5-flash",  # Matching common Gemini 2.0 usage
                 contents=prompt,

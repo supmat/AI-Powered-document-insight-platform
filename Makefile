@@ -34,15 +34,12 @@ env-check: ## Verify .env exists and contains all required keys
 local-run: env-check ## Start all dependent infrastructure and development servers locally
 	@echo "Starting up the whole stack via Docker Compose..."
 	sudo docker compose up -d --build
-	@echo "Initializing Database Schema..."
-	PYTHONPATH=. .venv/bin/python scripts/init_db.py
-	@echo "Starting Gateway and Processing Worker in parallel. Press Ctrl+C to stop."
-	@trap 'kill 0' SIGINT; \
-	.venv/bin/uvicorn gateway.main:app --reload --port 8001 & \
-	.venv/bin/python -m processing.main & \
-	wait
+	@echo "[*] Waiting for services to stabilize and initializing Database..."
+	sudo docker compose run --rm worker python scripts/init_db.py
+	@echo "✅ All services are running! Logs follow..."
+	sudo docker compose logs -f gateway worker
 
-gateway-run: ## Start the FastAPI gateway server locally
+gateway-run: ## Start the FastAPI gateway server locally (for hot-reloading)
 	.venv/bin/uvicorn gateway.main:app --reload --port 8001
 
 worker-run: ## Start the background processing worker to listen to RabbitMQ
@@ -57,12 +54,30 @@ setup: ## Install local python dependencies and pre-commit hooks
 	.venv/bin/pip install -r requirements.txt
 	.venv/bin/pre-commit install
 
+clean: ## Remove all transitory files and cache
+	@echo "[*] Cleaning up cache and bytecode..."
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.py[co]" -delete
+	rm -rf .pytest_cache
+	@echo "Clean finished."
+
+deep-clean: clean ## WIPE everything: containers, volumes, and local images
+	@echo "[*] Deep cleaning Docker environment..."
+	sudo docker compose down -v --rmi local
+	@echo "Deep clean finished."
+
+restart: deep-clean local-run ## Perform a TOTALLY FRESH restart of the whole stack
+
 format: ## Run the code formatters manually over all code
 	.venv/bin/black .
 	.venv/bin/ruff check . --fix
 
 test: ## Run the pytest suite
 	.venv/bin/pytest
+
+e2e-curl: ## Run the curl-based end-to-end system test (requires local-run first)
+	@echo "[*] Running curl-based E2E Verification..."
+	bash scripts/e2e_curl.sh
 
 help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
