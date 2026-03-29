@@ -2,7 +2,8 @@
 set -e
 
 # Configuration
-API_URL="http://localhost:8001/api/v1"
+API_URL="https://localhost/api/v1"
+CURL_CMD="curl -s -k"
 TEST_EMAIL="e2e_curl_$(date +%s)@test.com"
 TEST_PASS="testpass123"
 PDF_FILE="scripts/test_document.pdf"
@@ -18,12 +19,12 @@ doc.close()
 "
 
 echo "[*] Registering user: $TEST_EMAIL"
-curl -s -X POST "$API_URL/auth/register" \
+$CURL_CMD -X POST "$API_URL/auth/register" \
      -H "Content-Type: application/json" \
      -d "{\"email\": \"$TEST_EMAIL\", \"password\": \"$TEST_PASS\", \"full_name\": \"E2E Curl User\"}"
 
 echo -e "\n[*] Logging in..."
-LOGIN_JSON=$(curl -s -X POST "$API_URL/auth/login" \
+LOGIN_JSON=$($CURL_CMD -X POST "$API_URL/auth/login" \
      -F "username=$TEST_EMAIL" \
      -F "password=$TEST_PASS")
 
@@ -36,7 +37,7 @@ fi
 echo "[*] Token received: ${TOKEN:0:10}..."
 
 echo "[*] Uploading document..."
-COMMAND="curl -s -X POST \"$API_URL/upload_documents/\" \
+COMMAND="$CURL_CMD -X POST \"$API_URL/upload_documents/\" \
      -H \"Authorization: Bearer $TOKEN\" \
      -F \"files=@$PDF_FILE\""
 echo "Command: $COMMAND"
@@ -50,7 +51,7 @@ echo "[*] Waiting 10 seconds for background vectorization..."
 sleep 10
 
 echo "[*] Performing RAG Query..."
-QUERY_JSON=$(curl -s -X POST "$API_URL/query/" \
+QUERY_JSON=$($CURL_CMD -X POST "$API_URL/query/" \
      -H "Authorization: Bearer $TOKEN" \
      -H "Content-Type: application/json" \
      -d "{\"question\": \"What is the secret code?\"}")
@@ -70,7 +71,7 @@ fi
 
 # Optional Cleanup
 echo "[*] Cleaning up doc..."
-curl -s -X DELETE "$API_URL/documents/$DOC_ID" -H "Authorization: Bearer $TOKEN" > /dev/null
+$CURL_CMD -X DELETE "$API_URL/documents/$DOC_ID" -H "Authorization: Bearer $TOKEN" > /dev/null
 
 echo "[*] E2E Curl Test Finished Successfully!"
 rm $PDF_FILE

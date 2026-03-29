@@ -3,15 +3,19 @@ from google import genai
 from google.genai import types
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import List, Dict
+from typing import List, Dict, Tuple, Any
 from shared.models import DocumentChunk
 from processing.core.config import settings
+from shared.security import SecretService
 from tenacity import retry, stop_after_attempt, wait_exponential
 from sentence_transformers import SentenceTransformer
 
 _client = (
     genai.Client(api_key=settings.GEMINI_API_KEY) if settings.GEMINI_API_KEY else None
 )
+
+# Initialize secure service for Task 7.4
+secrets = SecretService(settings.DATA_ENCRYPTION_KEY)
 
 # Cache the local embedding model globally
 local_embedder = None
@@ -92,7 +96,7 @@ def _generate_local_answer(prompt: str) -> str:
 
 async def retrieve_relevant_chunks(
     db: AsyncSession, question_embedding: list[float], filters: Dict, top_k: int
-) -> List[DocumentChunk]:
+) -> List[Tuple[Any, Any]]:
     # Calculate the distance and label it
     distance_col = DocumentChunk.embedding.cosine_distance(question_embedding).label(
         "distance"
@@ -106,7 +110,16 @@ async def retrieve_relevant_chunks(
 
     stmt = stmt.order_by(distance_col).limit(top_k)
     result = await db.execute(stmt)
-    return result.all()
+    rows = result.all()
+
+    # Task 7.4: Decrypt each chunk's text content after retrieval from the DB
+    decrypted_chunks = []
+    for row in rows:
+        chunk = row[0]
+        chunk.text_content = secrets.decrypt_text(chunk.text_content)
+        decrypted_chunks.append((chunk, row[1]))
+
+    return decrypted_chunks
 
 
 async def generate_rag_answer(question: str, chunks: List[DocumentChunk]) -> str:
@@ -114,6 +127,7 @@ async def generate_rag_answer(question: str, chunks: List[DocumentChunk]) -> str
     if not chunks:
         return "I could not find any relevant documents to answer your question."
 
+    # Task 7.4: Decrypt each chunk's text content before passing to the LLM
     context_text = "\n\n---\n\n".join([chunk.text_content for chunk in chunks])
     prompt = f"""
     Answer the question based ONLY on the provided context below.
