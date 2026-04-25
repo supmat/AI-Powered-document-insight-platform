@@ -76,7 +76,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`)"
+      - "traefik.http.routers.gateway.rule=PathPrefix(`/api`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`) || PathPrefix(`/openapi.json`)"
       - "traefik.http.routers.gateway.entrypoints=websecure"
       - "traefik.http.routers.gateway.tls=true"
       - "traefik.http.services.gateway.loadbalancer.server.port=8001"
@@ -118,8 +118,8 @@ services:
       - "traefik.http.routers.jaeger.entrypoints=websecure"
       - "traefik.http.routers.jaeger.tls=true"
       - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
-    ports:
-      - "4317:4317"   # OTLP gRPC still needed for internal collection
+    # Note: port 4317 is NOT exposed externally — otel-collector receives all traces
+    # and forwards them to jaeger internally via docker network
 
   prometheus:
     image: prom/prometheus:latest
@@ -128,6 +128,8 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+      - '--web.external-url=https://prometheus.localhost'
+      - '--web.route-prefix=/'
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
@@ -154,7 +156,8 @@ services:
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - "4318:4318" # OTLP http
+      - "4317:4317" # OTLP gRPC (used by gateway + worker)
+      - "4318:4318" # OTLP HTTP
     depends_on:
       - jaeger
       - prometheus

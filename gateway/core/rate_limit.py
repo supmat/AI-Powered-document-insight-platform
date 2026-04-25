@@ -7,7 +7,7 @@ from typing import Dict, List
 
 # In-memory dictionary to track IPs (Replace with Redis for Production)
 request_history: Dict[str, List[float]] = defaultdict(list)
-RATE_LIMIT = 15  # requests
+RATE_LIMIT = 40  # requests
 TIME_WINDOW = 60  # seconds
 
 

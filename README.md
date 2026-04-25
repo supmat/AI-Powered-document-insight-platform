@@ -66,11 +66,17 @@ To perform a "factory reset" (wipe all databases, object storage, and local Dock
 make deep-clean
 ```
 
-### Observability
+### Observability & API Documentation
 
-Metrics and distributed traces are collected via OpenTelemetry. You can view them using the following live links (when the telemetry stack is running locally):
-- **Metrics (Prometheus):** [http://localhost:9090](http://localhost:9090)
-- **Traces (Jaeger):** [http://localhost:16686](http://localhost:16686)
+The platform includes a full observability stack and interactive API documentation, accessible via Traefik (HTTPS):
+
+- **API Documentation (Swagger):** [https://localhost/docs](https://localhost/docs)
+- **Metrics (Prometheus):** [https://prometheus.localhost](https://prometheus.localhost)
+- **Traces (Jaeger):** [https://jaeger.localhost](https://jaeger.localhost)
+- **Dashboards (Grafana):** [https://grafana.localhost](https://grafana.localhost)
+
+> [!NOTE]
+> Since we use self-signed certificates for local development, your browser will show a security warning. You can safely "Proceed to localhost" to access these internal services.
 
 ## Developer Workflow & CI/CD
 
