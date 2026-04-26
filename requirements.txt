@@ -24,6 +24,7 @@ tenacity>=8.2.3
 easyocr>=1.7.1
 langdetect>=1.0.9
 sentence-transformers>=2.6.1
+langchain-text-splitters>=0.3.0
 
 # Authentication & Security
 PyJWT>=2.8.0

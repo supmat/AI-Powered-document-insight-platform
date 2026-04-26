@@ -8,7 +8,6 @@ from shared.models import DocumentChunk
 from processing.core.config import settings
 from shared.security import SecretService
 from tenacity import retry, stop_after_attempt, wait_exponential
-from sentence_transformers import SentenceTransformer
 
 _client = (
     genai.Client(api_key=settings.GEMINI_API_KEY) if settings.GEMINI_API_KEY else None
@@ -24,41 +23,36 @@ local_embedder = None
 _local_llm_pipeline = None
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=2, min=4, max=20))
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=2, min=4, max=20),
+    reraise=True,
+)
 async def get_embeddings(texts: list[str]) -> list[list[float]]:
     """
     Generates high-quality vector embeddings for an array of text chunks.
     Attempts to use Gemini embedding 001 forcing 768 dimensions.
-    Falls back to local all-mpnet-base-v2 (768 dimensions) if Gemini fails.
+    Will retry up to 5 times.
     """
-    if _client:
-        try:
-            # The newer SDK does NOT accept the 'models/' prefix
-            config = types.EmbedContentConfig(
-                task_type="RETRIEVAL_DOCUMENT", output_dimensionality=768
-            )
+    if not _client:
+        raise RuntimeError("Gemini client is not initialized")
 
-            result = _client.models.embed_content(
-                model="gemini-embedding-001",
-                contents=texts,
-                config=config,
-            )
-            # Slice to exactly 768 just in case, as some models return 3072 by default
-            return [e.values[:768] for e in result.embeddings]
-
-        except Exception as e:
-            print(f"[ERROR!] Gemini model failed: {e}")
-
-    # Fallback to local SentenceTransformer (MUST be 768-D to match pgvector schema)
-    global local_embedder
-    if local_embedder is None:
-        print(
-            "[*] Initializing local 'all-mpnet-base-v2' (768-D) Embedding model into memory..."
+    try:
+        config = types.EmbedContentConfig(
+            task_type="RETRIEVAL_DOCUMENT", output_dimensionality=768
         )
-        local_embedder = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
-    embeddings = local_embedder.encode(texts)
-    return embeddings.tolist()
+        result = _client.models.embed_content(
+            model="gemini-embedding-001",
+            contents=texts,
+            config=config,
+        )
+        return [e.values[:768] for e in result.embeddings]
+
+    except Exception as e:
+        print(f"[ERROR!] Gemini model failed: {e}")
+        # Re-raise to trigger Tenacity retry
+        raise TimeoutError("Embedding system failed with timeout") from e
 
 
 def _get_local_llm():
