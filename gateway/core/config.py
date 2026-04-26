@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     MINIO_BUCKET_NAME: str = "documents"
     MINIO_SECURE: bool = False
 
+    # Redis Settings
+    REDIS_URL: str = "redis://localhost:6379/0"
+
     # RabbitMQ Settings
     RABBITMQ_URL: str
     RABBITMQ_QUEUE_NAME: str = "document_processing_queue"

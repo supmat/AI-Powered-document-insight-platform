@@ -19,6 +19,17 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -73,6 +84,7 @@ services:
       - POSTGRES_SERVER=postgres
       - MINIO_URL=minio:9000
       - RABBITMQ_URL=amqp://${RABBITMQ_USER:-admin}:${RABBITMQ_PASSWORD:-password}@rabbitmq:5672/
+      - REDIS_URL=redis://redis:6379/0
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
     labels:
       - "traefik.enable=true"
@@ -86,6 +98,8 @@ services:
       rabbitmq:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   worker:

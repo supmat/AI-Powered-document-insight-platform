@@ -25,6 +25,7 @@ async def lifespan(app: FastAPI):
 
     # Ensure MinIO bucket exists
     from gateway.services.minio_client import ensure_bucket_exists
+    from gateway.core.rate_limit import close_redis
 
     try:
         ensure_bucket_exists()
@@ -32,6 +33,9 @@ async def lifespan(app: FastAPI):
         print(f"Failed to initialize MinIO bucket: {e}")
 
     yield
+
+    # Cleanup resources on shutdown
+    await close_redis()
 
 
 # ------------------------------------------------------------------------------

@@ -73,7 +73,7 @@ format: ## Run the code formatters manually over all code
 	.venv/bin/ruff check . --fix
 
 test: ## Run the pytest suite
-	.venv/bin/pytest
+	OTEL_SDK_DISABLED=true .venv/bin/pytest
 
 e2e-curl: ## Run the curl-based end-to-end system test (requires local-run first)
 	@echo "[*] Running curl-based E2E Verification..."
