@@ -85,8 +85,12 @@ async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
                 print(
                     f"[*] Successfully processed and vectorized document {doc_id} ({len(chunks)} chunks)"
                 )
+            except TimeoutError as e:
+                print(
+                    f"[TIMEOUT ERROR] Failed to process document {doc_id}. Embedding system timed out after retries. User can try uploading again. Details: {e}"
+                )
             except Exception as e:
-                print(f"[ERROR!] Error processing message: {e}")
+                print(f"[ERROR!] Error processing message for document {doc_id}: {e}")
 
 
 async def main():

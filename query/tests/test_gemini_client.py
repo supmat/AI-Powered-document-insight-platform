@@ -131,65 +131,23 @@ async def test_get_embeddings_via_gemini():
 
 
 @pytest.mark.asyncio
-async def test_get_embeddings_gemini_falls_back_on_exception():
-    """When Gemini raises, falls back to local SentenceTransformer."""
-    import numpy as np
-
+async def test_get_embeddings_raises_timeout_on_exception():
+    """When Gemini raises, it retries and eventually raises TimeoutError."""
     mock_client = MagicMock()
     mock_client.models.embed_content.side_effect = Exception("API error")
 
-    mock_embedder = MagicMock()
-    mock_embedder.encode.return_value = np.array([[0.2] * 768])
-
-    with patch("query.services.gemini_client._client", mock_client), patch(
-        "query.services.gemini_client.local_embedder", mock_embedder
-    ):
+    with patch("query.services.gemini_client._client", mock_client):
         from query.services.gemini_client import get_embeddings
 
-        result = await get_embeddings(["hello"])
-
-    assert len(result) == 1
-    assert len(result[0]) == 768
-
-
-# ---------------------------------------------------------------------------
-# Tests: local fallback path (no Gemini client)
-# ---------------------------------------------------------------------------
+        with pytest.raises(TimeoutError, match="Embedding system failed with timeout"):
+            await get_embeddings(["hello"])
 
 
 @pytest.mark.asyncio
-async def test_get_embeddings_local_fallback_no_client():
-    """When _client is None, uses SentenceTransformer directly."""
-    import numpy as np
-
-    mock_embedder = MagicMock()
-    mock_embedder.encode.return_value = np.array([[0.3] * 768, [0.4] * 768])
-
-    with patch("query.services.gemini_client._client", None), patch(
-        "query.services.gemini_client.local_embedder", mock_embedder
-    ):
+async def test_get_embeddings_raises_runtime_error_no_client():
+    """When _client is None, raises RuntimeError immediately."""
+    with patch("query.services.gemini_client._client", None):
         from query.services.gemini_client import get_embeddings
 
-        result = await get_embeddings(["foo", "bar"])
-
-    assert len(result) == 2
-
-
-@pytest.mark.asyncio
-async def test_get_embeddings_initializes_local_model_when_none():
-    """When local_embedder is None and _client is None, loads SentenceTransformer."""
-    import numpy as np
-
-    mock_model = MagicMock()
-    mock_model.encode.return_value = np.array([[0.5] * 768])
-
-    with patch("query.services.gemini_client._client", None), patch(
-        "query.services.gemini_client.local_embedder", None
-    ), patch(
-        "query.services.gemini_client.SentenceTransformer", return_value=mock_model
-    ):
-        from query.services.gemini_client import get_embeddings
-
-        result = await get_embeddings(["init test"])
-
-    assert len(result) == 1
+        with pytest.raises(RuntimeError, match="Gemini client is not initialized"):
+            await get_embeddings(["foo"])

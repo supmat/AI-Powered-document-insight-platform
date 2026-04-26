@@ -1,18 +1,18 @@
-def chunk_text(text: str, max_words: int = 400, overlap: int = 50) -> list[str]:
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+
+def chunk_text(text: str) -> list[str]:
     """
-    Naively chunks text by words with sliding overlap to maintain semantic context
-    while strictly fitting within Gemini and Vector DB dimension limits.
+    Smart chunking using LangChain's RecursiveCharacterTextSplitter.
+    Splits text cleanly at natural boundaries.
     """
-    words = text.split()
-    chunks: list[str] = []
+    if not text.strip():
+        return []
 
-    if not words:
-        return chunks
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=2000,
+        chunk_overlap=250,
+        separators=["\n\n", "\n", "(?<=\. )", " ", ""],
+    )
 
-    i = 0
-    while i < len(words):
-        chunk = " ".join(words[i : i + max_words])
-        chunks.append(chunk)
-        i += max_words - overlap
-
-    return chunks
+    return text_splitter.split_text(text)
